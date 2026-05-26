@@ -5,40 +5,17 @@ import SignOutButton from "@/components/sign-out-btn"
 import { AlertDialogSignOut } from "@/components/sign-out-dialog-alert"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
-import { signIn, useSession, signOut } from "next-auth/react"
+
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 
-import { useEffect } from "react"
+
 
 function Navbar() {
-    const { data, status } = useSession()
+
     const router = useRouter()
     const pathname = usePathname()
 
-useEffect(() => {
-    // مسیرهای عمومی که همه می‌توانند ببینند
-    const isPublicPage = pathname === "/auth" || pathname === "/";
-    
-    // اگر کاربر لاگین نیست و در صفحه عمومی نیست، بفرست به auth
-    if (!data && !isPublicPage) {
-        router.push("/auth");
-        return;
-    }
-
-    // اگر کاربر لاگین است و در صفحه لاگین است، بفرست به داشبورد
-    if (data && pathname === "/auth") {
-        router.push("/dashboard/projects");
-        return;
-    }
-    
-    // ریدایرکت از صفحه اصلی به داشبورد
-    if (data && pathname === "/") {
-        router.push("/dashboard/projects");
-        return;
-    }
-
-}, [pathname, data, router]);
 
     return (
         <nav className="bg-gray-50 relative w-full h-16 shadow-xl z-50 flex items-center justify-between font-manrope px-8">
@@ -48,18 +25,23 @@ useEffect(() => {
                     <p className="font-manrope hidden sm:flex ">DRAFT TEAM</p>
 
                 </Link>
+                {pathname === "/dashboard" && (
+                    <div className="flex items-center gap-4 w-full justify-center">
+                        <NewProjectDialog>
+                            <Button type="button" variant={"outline"} className="" >
+                                <Plus />
+                                New Project
+                            </Button>
+                        </NewProjectDialog>
+                    </div>
 
-                <NewProjectDialog>
-                    <Button type="button" variant={"outline"} className="" >
-                        <Plus />
-                        New Project
-                    </Button>
-                </NewProjectDialog>
+                )}
             </div>
 
-            <div className="  text-black  w">
 
-                {data && (
+            <div className="  text-black ">
+
+                {status === "authenticated" && (
 
                     <div className="flex items-center gap-4 w-full">
 
@@ -71,7 +53,7 @@ useEffect(() => {
                     </div>
 
                 )}
-                {!data && (
+                {status === "unauthenticated" && (
                     <Button type="button" variant={"outline"} className={` px-8 py-4 `} onClick={() => router.push("/auth")}>
                         SIGN IN
                     </Button>
