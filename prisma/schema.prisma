@@ -73,7 +73,7 @@ model ProjectMember {
   projectId String
 
   user    User    @relation(fields: [userId], references: [id])
-  project Project @relation(fields: [projectId], references: [id])
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   tasks Task[]
 
@@ -86,7 +86,7 @@ model Container {
   order     Int
   projectId String
 
-  project Project @relation(fields: [projectId], references: [id])
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   tasks   Task[]
 }
 
@@ -97,8 +97,8 @@ model Task {
   order       Int
 
   containerId String
-  assignedId  String
+  assignedId  String?
 
-  container Container     @relation(fields: [containerId], references: [id])
-  assigned  ProjectMember @relation(fields: [assignedId], references: [id])
+  container Container     @relation(fields: [containerId], references: [id], onDelete: Cascade)
+  assigned  ProjectMember? @relation(fields: [assignedId], references: [id], onDelete: Cascade)
 }
