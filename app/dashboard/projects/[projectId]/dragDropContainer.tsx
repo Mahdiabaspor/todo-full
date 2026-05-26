@@ -1,8 +1,11 @@
 "use client"
 import { createTask, moveTask } from "@/app/actions/task-actions"; // Added a mock update action
-import { Task } from "@/app/generated/prisma/client";
+import { ProjectMember, Task, User } from "@/app/generated/prisma/client";
 import Draggable from "@/components/draggable";
+import DropDownContainer from "@/components/dropDownContainer";
 import Droppable from "@/components/droppable";
+import { TaskDrawer } from "@/components/taskDrawer";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DragDropProvider } from "@dnd-kit/react";
@@ -11,7 +14,7 @@ import { useEffect, useState, startTransition } from "react";
 
 export interface IProject {
     // ... (Your interface remains the same)
-    members: { id: string; role: string; projectId: string; userId: string; }[];
+    members: { id: string; role: string; projectId: string; userId: string; user: User }[];
     containers: ({
         tasks: {
             title: string;
@@ -20,6 +23,8 @@ export interface IProject {
             description: string;
             containerId: string;
             assignedId: string;
+            assigned: { id: string; role: string; projectId: string; userId: string; user: User } | null
+            progress: number;
         }[];
     } & {
         title: string;
@@ -116,18 +121,33 @@ function DragDropContainer({ project: initialProject }: { project: IProject }) {
         >
             <div className="flex gap-4 p-4">
                 {project.containers.map((container) => (
-                    <div key={container.id} className="w-72 min-h-100 bg-gray-50 rounded-xl flex flex-col border">
+                    <div key={container.id} className="w-72 min-h-100 bg-gray-50 rounded-xl flex flex-col border relative">
                         <div className="bg-black p-3 w-full rounded-t-xl">
                             <h3 className="font-bold text-center text-white">{container.title}</h3>
+                            <DropDownContainer containerId={container.id} />
                         </div>
 
                         <Droppable id={container.id} key={container.id} >
                             <div className="p-2 grow flex flex-col gap-2 w-full">
-                                {container.tasks.map((task) => (
+                                {container.tasks.map((task) =>
+                                (
                                     <Draggable key={task.id} id={task.id} data={task}>
-                                        <div className="bg-white p-3 rounded shadow-sm border border-gray-200 w-full hover:border-blue-500 cursor-grab active:cursor-grabbing">
-                                            {task.title}
-                                        </div>
+                                        <TaskDrawer task={task} projectMembers={project.members}>
+
+
+                                            <div className="bg-white p-3 overflow-hidden rounded shadow-sm border border-gray-200 w-full hover:border-blue-500 cursor-grab active:cursor-grabbing relative">
+                                                <span className="absolute  left-0 top-0  bg-green-500/20 h-full transition-all duration-500" style={{ width: `${task.progress}%` }} />
+                                                <span className="absolute  left-0   bg-green-500  h-full w-1 top-0" />
+                                                <div className="relative z-30 flex items-center justify-between">
+                                                    <p className="font-manrope font-bold">{task.title}</p>
+                                                    {/* <p className="font-manrope text-muted-foreground text-xs mt-1">{task.description}</p> */}
+                                                    {task.assigned && <Badge >{task.assigned.user.name}</Badge>}
+                                                </div>
+                                                {/* {JSON.stringify(task.assigned)} */}
+
+
+                                            </div>
+                                        </TaskDrawer>
                                     </Draggable>
                                 ))}
                             </div>

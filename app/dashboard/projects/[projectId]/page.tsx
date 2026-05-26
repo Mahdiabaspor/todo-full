@@ -24,12 +24,16 @@ async function page({
         id: projectId
       },
       include: {
-        members: true,
+        members: {
+          include:{user:true}
+        },
         containers: {
-          include: { tasks: true }
+          include: { tasks: {include:{assigned:{include:{user:true}}} } }
         }
       }
     })
+
+    
     return project
   })
 

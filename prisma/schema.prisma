@@ -95,6 +95,7 @@ model Task {
   title       String
   description String
   order       Int
+  progress    Int    @default(0)
 
   containerId String
   assignedId  String?

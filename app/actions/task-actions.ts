@@ -9,7 +9,8 @@ export async function createTask(
   title: string,
   containerId: string,
   description: string = "",
-  assignedId?: string
+  assignedId?: string,
+  progress: number = 0
 ) {
   if (!title || title.trim() === "") {
     throw new Error("Task title cannot be empty")
@@ -43,6 +44,7 @@ export async function createTask(
       order: (lastTask?.order ?? -1) + 1,
       containerId,
       assignedId,
+      progress,
     },
   })
 
@@ -104,6 +106,35 @@ export async function deleteTask(TaskId: string) {
     })
     revalidatePath("/dashboard/projects")
     return deletedTask
+}
+
+export async function editTaskFromForm(formData: FormData) {
+  const userId = await sessionCheck()
+
+  const id = formData.get("id")?.toString()
+  const title = formData.get("title")?.toString() ?? ""
+  const description = formData.get("description")?.toString() ?? ""
+  const assignedId = formData.get("assignedId")?.toString() || null
+  const progressRaw = formData.get("progress")?.toString()
+  const progress = progressRaw ? parseInt(progressRaw, 10) : 0
+
+  if (!id) throw new Error("Task id is required")
+  if (!title || title.trim() === "") throw new Error("Task title cannot be empty")
+
+  const existing = await prisma.task.findUnique({ where: { id } })
+  if (!existing) throw new Error("Task not found")
+
+  await prisma.task.update({
+    where: { id },
+    data: {
+      title: title.trim(),
+      description: description.trim() || "",
+      assignedId: assignedId,
+      progress: Math.max(0, Math.min(100, progress)),
+    },
+  })
+
+  revalidatePath("/dashboard/projects")
 }
 
 
