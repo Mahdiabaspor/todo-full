@@ -8,6 +8,7 @@ import prisma from '@/lib/prisma'
 
 import { Folder, FolderArchive, Plus } from 'lucide-react'
 import DragDropContainer, { IProject } from './dragDropContainer';
+import { InviteMemberDialog } from '@/components/invite-dialog-alert';
 
 async function page({
   params,
@@ -25,15 +26,15 @@ async function page({
       },
       include: {
         members: {
-          include:{user:true}
+          include: { user: true }
         },
         containers: {
-          include: { tasks: {include:{assigned:{include:{user:true}}} } }
+          include: { tasks: { include: { assigned: { include: { user: true } } } } }
         }
       }
     })
 
-    
+
     return project
   })
 
@@ -47,15 +48,15 @@ async function page({
           <FolderArchive className='size-7!' />
           {project?.name}
         </div>
-        <div className=''>
-          <NewContainerDialog projectId={projectId}/>
-
+        <div className='flex gap-2'>
+          <NewContainerDialog projectId={projectId} />
+          <InviteMemberDialog projectId={projectId} />
 
         </div>
       </div>
       <SelectSeparator className='mt-3' />
       <div className='flex items-start gap-5 mt-5 h-full overflow-x-auto'>
-        <DragDropContainer project={project as IProject}/>
+        <DragDropContainer project={project as IProject} />
       </div>
 
     </div>
